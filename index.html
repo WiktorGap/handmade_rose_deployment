@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magiczna Róża</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; 
+            background: radial-gradient(circle at center, #111125 0%, #050508 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #particles-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .particle { position: absolute; top: -10vh; will-change: transform; animation: fall linear infinite; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        @keyframes fall {
+            0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate3d(0, 115vh, 0) rotate(360deg); opacity: 0; }
+        }
+
+        .step {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; background: rgba(5, 5, 8, 0.95); backdrop-filter: blur(10px);
+            transition: opacity 0.8s ease, visibility 0.8s; text-align: center;
+        }
+        .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        h1 { font-weight: 300; font-size: 2.2rem; margin-bottom: 40px; padding: 0 20px; }
+        .options { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        button {
+            padding: 16px 35px; font-size: 1.1rem; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px; cursor: pointer; background: rgba(255,255,255,0.08);
+            color: white; transition: all 0.3s ease;
+        }
+        button:hover { background: rgba(255,255,255,0.25); transform: translateY(-3px); }
+
+        #rose-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; opacity: 0; transform: scale(0.95);
+            transition: opacity 2s ease, transform 2s ease;
+        }
+
+        #the-rose {
+            font-size: 55vh; 
+            margin: 0;
+            line-height: 1;
+            user-select: none;
+            animation: subtleFloat 8s ease-in-out infinite; 
+            transition: filter 1.5s ease;
+        }
+        
+        .color-red { filter: drop-shadow(0 0 30px rgba(255,0,0,0.5)); }
+        .color-pink { filter: hue-rotate(-45deg) drop-shadow(0 0 30px rgba(255,105,180,0.5)); }
+        .color-blue { filter: hue-rotate(170deg) drop-shadow(0 0 30px rgba(0,255,255,0.5)); }
+
+        @keyframes subtleFloat {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+            25% { transform: translate3d(4px, -12px, 0) rotate(3deg); }
+            50% { transform: translate3d(-3px, 4px, 0) rotate(-1deg); }
+            75% { transform: translate3d(2px, -6px, 0) rotate(2deg); }
+        }
+
+        #signature {
+            margin-top: 20px; font-size: 2.8rem; font-family: 'Brush Script MT', cursive, sans-serif;
+            color: white; text-shadow: 0 0 15px rgba(255,255,255,0.6);
+            opacity: 0; transition: opacity 2.5s ease 1s; padding: 0 20px; text-align: center;
+        }
+
+        .action-container {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 25;
+            opacity: 0;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 2.5s ease 1.5s;
+            position: relative;
+        }
+        
+        .action-container.column {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .visible { opacity: 1; }
+        
+        .btn-proposal { background: #e94560; border-color: #ff2e63; }
+        .btn-proposal:hover { background: #ff2e63; }
+        .btn-yes { background: #28a745; border-color: #28a745; }
+        .btn-yes:hover { background: #218838; }
+        
+        .btn-no { 
+            background: #dc3545; 
+            border-color: #dc3545; 
+            transition: transform 0.2s ease-out, left 0.2s ease-out, top 0.2s ease-out;
+        }
+        .btn-no:hover { background: #c82333; }
+
+        .btn-no.running {
+            position: fixed; 
+            z-index: 100;
+        }
+
+        .success-msg {
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="particles-container"></div>
+
+    <div id="step1" class="step">
+        <h1>Jaki kolor odzwierciedla dzisiejszy dzień?</h1>
+        <div class="options">
+            <button onclick="nextStep(1, 'red')">Klasyczna Czerwień</button>
+            <button onclick="nextStep(1, 'pink')">Subtelny Róż</button>
+            <button onclick="nextStep(1, 'blue')">Mistyczny Błękit</button>
+        </div>
+    </div>
+
+    <div id="step2" class="step hidden">
+        <h1>Co ma unosić się w powietrzu?</h1>
+        <div class="options">
+            <button onclick="nextStep(2, 'hearts')">Gorące Serca 💖</button>
+            <button onclick="nextStep(2, 'stars')">Błyszczące Gwiazdy ⭐</button>
+        </div>
+    </div>
+    
+    <div id="rose-container">
+        <div id="the-rose" class="color-red">🌹</div>
+        <div id="signature">Wszystkiego najpiękniejszego! ~Wiktor</div>
+        
+        <div id="action-block" class="action-container">
+            <button onclick="resetFlow()">Przetestuj inne warianty 🔄</button>
+            <button id="main-proposal-btn" class="btn-proposal" onclick="triggerProposal()">Umówimy się? ☕</button>
+        </div>
+    </div>
+
+    <script>
+        const choices = { color: null, effect: null };
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xlgyvbrp"; 
+        
+        let noButtonRunCount = 0;
+
+        function nextStep(currentStep, choice) {
+            if (currentStep === 1) {
+                choices.color = choice;
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+                document.getElementById('the-rose').className = 'color-' + choice;
+            } else if (currentStep === 2) {
+                choices.effect = choice;
+                document.getElementById('step2').classList.add('hidden');
+                
+                const roseContainer = document.getElementById('rose-container');
+                roseContainer.style.opacity = 1;
+                roseContainer.style.transform = 'scale(1)';
+                document.getElementById('signature').style.opacity = 1;
+                document.getElementById('action-block').classList.add('visible');
+                
+                generateCSSParticles();
+            }
+        }
+
+        function generateCSSParticles() {
+            const container = document.getElementById('particles-container');
+            container.innerHTML = ''; 
+            const symbol = choices.effect === 'hearts' ? '💖' : '⭐';
+            
+            for (let i = 0; i < 35; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.textContent = symbol;
+                p.style.left = (Math.random() * 100) + 'vw';
+                p.style.fontSize = (Math.random() * 1.4 + 0.8) + 'rem';
+                p.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                p.style.animationDelay = (Math.random() * 6) + 's';
+                container.appendChild(p);
+            }
+        }
+
+        function resetFlow() {
+            document.getElementById('rose-container').style.opacity = 0;
+            document.getElementById('rose-container').style.transform = 'scale(0.95)';
+            document.getElementById('signature').style.opacity = 0;
+            
+            const actionBlock = document.getElementById('action-block');
+            actionBlock.classList.remove('visible');
+            actionBlock.classList.remove('column'); 
+            
+            document.getElementById('particles-container').innerHTML = '';
+            
+            noButtonRunCount = 0;
+
+            actionBlock.innerHTML = `
+                <button onclick="resetFlow()">Przetestuj inne warianty 🔄</button>
+                <button id="main-proposal-btn" class="btn-proposal" onclick="triggerProposal()">Umówimy się? ☕</button>
+            `;
+
+            setTimeout(() => {
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('step1').classList.remove('hidden');
+            }, 400);
+        }
+
+        function triggerProposal() {
+            const actionBlock = document.getElementById('action-block');
+            actionBlock.innerHTML = `
+                <button onclick="resetFlow()">Przetestuj inne warianty 🔄</button>
+                <button class="btn-yes" onclick="sendAnswerToAPI('Tak')">TAK! 💖</button>
+                <button id="btn-no" class="btn-no" onclick="handleNoClick()">NIE 💔</button>
+            `;
+            noButtonRunCount = 0;
+        }
+
+        function handleNoClick() {
+            noButtonRunCount++;
+            const btn = document.getElementById('btn-no');
+            
+            if (noButtonRunCount < 3) {
+                if (!btn.classList.contains('running')) {
+                    btn.classList.add('running');
+                }
+                
+                const maxX = window.innerWidth - 150;
+                const maxY = window.innerHeight - 80;
+                
+                const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+                const randomY = Math.max(20, Math.floor(Math.random() * maxY));
+                
+                btn.style.left = randomX + 'px';
+                btn.style.top = randomY + 'px';
+            } else {
+                sendAnswerToAPI('Nie');
+            }
+        }
+
+        function sendAnswerToAPI(odpowiedz) {
+            const actionBlock = document.getElementById('action-block');
+            
+            const odpowiedzTresc = (odpowiedz === 'Tak') 
+                ? "Super! Odpowiedź brzmi: TAK! 💖 Czas dogadać szczegóły" 
+                : "Tym razem odpowiedź to: NIE 💔.";
+
+            actionBlock.classList.add('column');
+            actionBlock.innerHTML = `
+                <div class="success-msg">Wiadomość wysłano mailem do właściciela strony! 💌</div>
+                <button onclick="resetFlow()">Przetestuj inne warianty 🔄</button>
+            `;
+
+            fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "Temat": "Odpowiedź na zaproszenie (Magiczna Róża)",
+                    "Odpowiedź": odpowiedzTresc,
+                    "Czas kliknięcia": new Date().toLocaleString('pl-PL')
+                })
+            }).catch(err => console.error("Wysyłanie w tle zakończone błędem:", err));
+        }
+    </script>
+</body>
+</html>
